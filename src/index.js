@@ -1,8 +1,18 @@
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable no-console */
 import {
-  Client, IntentsBitField,
+  Client, IntentsBitField, Events, GatewayIntentBits, Collection, REST, Routes,
 } from 'discord.js';
 import dotenv from 'dotenv';
-import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// eslint-disable-next-line no-underscore-dangle
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+// const __dirname = `file://${transtion.replace(/\\/g, '/')}`;
 
 dotenv.config();
 
@@ -14,23 +24,57 @@ const client = new Client({
     IntentsBitField.Flags.MessageContent,
   ],
 });
-
-client.on('ready', (c) => {
-  console.log(`${c.user.tag}`);
+client.login(process.env.Discord_token);
+client.commands = new Collection();
+client.once(Events.ClientReady, (readyClient) => {
+  console.log(`Ready! Logged in as ${readyClient.user.tag}`);
 });
 
-client.on('messageCreate', (message) => {
-  console.log(message.content);
-});
+async function loadCommands() {
+  const foldersPath = path.join(__dirname, 'Commands');
+  const commandFolders = await fs.promises.readdir(foldersPath);
 
-client.on('messageCreate', async (message) => {
-  if (message.content === 'I love cortlands cock') { message.reply('I wanna fuck him too!!'); } else if (message.content === 'Bot get this bitch') {
-    let string;
-    await axios.get('https://insult.mattbas.org/api/insult.txt?who=Cortland').then((response) => {
-      string = response.data;
-    });
-    message.reply(string);
+  for (const folder of commandFolders) {
+    const commandsPath = path.join(foldersPath, folder);
+    const commandFiles = (await fs.promises.readdir(commandsPath)).filter((file) => file.endsWith('.js'));
+
+    for (const file of commandFiles) {
+      const filePathtest = path.join(commandsPath, file);
+      const filePath = `file://${filePathtest}`;
+      try {
+        const module = await import(filePath);
+        const command = module.default;
+
+        if ('data' in command && 'execute' in command) {
+          client.commands.set(command.data.name, command);
+        } else {
+          console.log(`[Warning] The command at ${filePath} is missing data and execute properties`);
+        }
+      } catch (error) {
+        console.log(`[Error] Failed to import module from ${filePath}: ${error}`);
+      }
+    }
+  }
+}
+
+loadCommands();
+
+client.on(Events.InteractionCreate, async (interaction) => {
+  if (!interaction.isChatInputCommand()) return;
+  const command = interaction.client.commands.get(interaction.commandName);
+
+  if (!command) {
+    console.error(`no command matching ${interaction.commandName} was found`); return;
+  }
+
+  try {
+    await command.execute(interaction);
+  } catch (error) {
+    console.error(error);
+    if (interaction.replied || interaction.deferred) {
+      await interaction.followUp({ content: 'there was an error while executing this command!', ephemeral: true });
+    } else {
+      await interaction.reply({ content: 'there was an error while excuting this command!', ephemeral: true });
+    }
   }
 });
-
-client.login(process.env.Discord_token);
