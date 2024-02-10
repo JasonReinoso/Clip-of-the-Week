@@ -2,7 +2,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
 import {
-  Client, IntentsBitField, Events, GatewayIntentBits, Collection, REST, Routes,
+  AuditLogEvent, Client, IntentsBitField, Events, GatewayIntentBits, Collection, REST, Routes,
 } from 'discord.js';
 import dotenv from 'dotenv';
 import fs from 'fs';
@@ -22,6 +22,7 @@ const client = new Client({
     IntentsBitField.Flags.GuildMembers,
     IntentsBitField.Flags.GuildMessages,
     IntentsBitField.Flags.MessageContent,
+    IntentsBitField.Flags.GuildModeration,
   ],
 });
 client.login(process.env.Discord_token);
@@ -59,6 +60,7 @@ async function loadCommands() {
 
 loadCommands();
 
+// listens for events from slash commands
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
   const command = interaction.client.commands.get(interaction.commandName);
@@ -77,4 +79,24 @@ client.on(Events.InteractionCreate, async (interaction) => {
       await interaction.reply({ content: 'there was an error while excuting this command!', ephemeral: true });
     }
   }
+});
+
+client.on(Events.GuildAuditLogEntryCreate, async (auditLog) => {
+  const { action, executorId } = auditLog;
+  const channel = client.channels.cache.get('1205390325531803648');
+
+  if (action !== AuditLogEvent.MemberDisconnect) return;
+  console.log(auditLog);
+
+  const executor = await client.users.fetch(executorId);
+
+  try {
+    channel.send(`${executor.tag} has kicked a User`);
+  } catch (e) {
+    console.error(e);
+  }
+});
+
+client.on(Events.MessageComponentCreate, async (interaction) => {
+  console.log(interaction.customId);
 });
