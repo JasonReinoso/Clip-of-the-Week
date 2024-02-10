@@ -62,22 +62,27 @@ loadCommands();
 
 // listens for events from slash commands
 client.on(Events.InteractionCreate, async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
-  const command = interaction.client.commands.get(interaction.commandName);
+  if (interaction.isChatInputCommand()) {
+    const command = interaction.client.commands.get(interaction.commandName);
 
-  if (!command) {
-    console.error(`no command matching ${interaction.commandName} was found`); return;
-  }
-
-  try {
-    await command.execute(interaction);
-  } catch (error) {
-    console.error(error);
-    if (interaction.replied || interaction.deferred) {
-      await interaction.followUp({ content: 'there was an error while executing this command!', ephemeral: true });
-    } else {
-      await interaction.reply({ content: 'there was an error while excuting this command!', ephemeral: true });
+    if (!command) {
+      console.error(`no command matching ${interaction.commandName} was found`); return;
     }
+
+    try {
+      await command.execute(interaction);
+    } catch (error) {
+      console.error(error);
+      if (interaction.replied || interaction.deferred) {
+        await interaction.followUp({ content: 'there was an error while executing this command!', ephemeral: true });
+      } else {
+        await interaction.reply({ content: 'there was an error while excuting this command!', ephemeral: true });
+      }
+    }
+  }
+  else if(interaction.isButton() && interaction.customId ==='del')
+  {
+    console.log('hi');
   }
 });
 
@@ -95,8 +100,4 @@ client.on(Events.GuildAuditLogEntryCreate, async (auditLog) => {
   } catch (e) {
     console.error(e);
   }
-});
-
-client.on(Events.MessageComponentCreate, async (interaction) => {
-  console.log(interaction.customId);
 });
