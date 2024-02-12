@@ -53,19 +53,17 @@ const execute = async (interaction) => {
 
   const buttonActionRow = new ActionRowBuilder();
   const voteNumber = [];
+  const { timestamp } = exampleEmbed.data;
+  for (let i = 0; i < embedOption.length; i++) {
+    if (embedOption[i] === null) continue;
 
-  embedOption.forEach((response) => {
-    if (response === null) return;
-
-    exampleEmbed.addFields({ name: response, value: `> ${0} `, inline: true });
-    buttonActionRow.addComponents(createButton(`${exampleEmbed.data.timestamp} ${slashOption}`, response, ButtonColors[0]));
+    exampleEmbed.addFields({ name: embedOption[i], value: `> ${0} `, inline: true });
+    buttonActionRow.addComponents(createButton(`${timestamp} ${slashOption[i]}`, embedOption[i], ButtonColors[0]));
     voteNumber.push(0);
-  });
-  buttonActionRow.addComponents(createButton('Vote', 'Vote', ButtonColors[0]));
-
-  console.log(buttonActionRow);
-
-  pushToEmbedMap(exampleEmbed, buttonActionRow);
+  }
+  buttonActionRow.addComponents(createButton(`${timestamp} Vote`, 'Vote', ButtonColors[0]));
+  const usersWhoVoted = new Map();
+  pushToEmbedMap(exampleEmbed, buttonActionRow, voteNumber, usersWhoVoted);
 
   await interaction.reply({ embeds: [exampleEmbed], components: [buttonActionRow] });
 };
