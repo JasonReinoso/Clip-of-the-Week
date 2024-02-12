@@ -10,6 +10,7 @@ import {
   EmbedBuilder, SlashCommandBuilder, TextInputBuilder, TextInputStyle, ModalBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, UserSelectMenuBuilder, Component, ComponentType, embedLength,
 } from 'discord.js';
 import createButton from '../../Components/button.js';
+import { pushToEmbedMap } from '../../Components/embeds.js';
 
 const ButtonColors = [ButtonStyle.Primary, ButtonStyle.Secondary, ButtonStyle.Success, ButtonStyle.Danger, ButtonStyle.Link];
 
@@ -52,14 +53,19 @@ const execute = async (interaction) => {
 
   const buttonActionRow = new ActionRowBuilder();
   const voteNumber = [];
+
   embedOption.forEach((response) => {
     if (response === null) return;
 
     exampleEmbed.addFields({ name: response, value: `> ${0} `, inline: true });
-    buttonActionRow.addComponents(createButton(response, response, ButtonColors[0]));
+    buttonActionRow.addComponents(createButton(`${exampleEmbed.data.timestamp} ${slashOption}`, response, ButtonColors[0]));
     voteNumber.push(0);
   });
   buttonActionRow.addComponents(createButton('Vote', 'Vote', ButtonColors[0]));
+
+  console.log(buttonActionRow);
+
+  pushToEmbedMap(exampleEmbed, buttonActionRow);
 
   await interaction.reply({ embeds: [exampleEmbed], components: [buttonActionRow] });
 };
