@@ -61,7 +61,7 @@ const execute = async (interaction) => {
     buttonActionRow.addComponents(createButton(`${timestamp} ${slashOption[i]}`, embedOption[i], ButtonColors[0]));
     voteNumber.push(0);
   }
-  buttonActionRow.addComponents(createButton(`${timestamp} Vote`, 'Vote', ButtonColors[0]));
+  buttonActionRow.addComponents(createButton(`${timestamp} Vote`, 'Show result', ButtonColors[0]));
   const usersWhoVoted = new Map();
   pushToEmbedMap(exampleEmbed, buttonActionRow, voteNumber, usersWhoVoted);
 

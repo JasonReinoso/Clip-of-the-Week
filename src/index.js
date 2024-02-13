@@ -134,10 +134,21 @@ client.on(Events.InteractionCreate, async (interaction) => {
         interaction.deferUpdate();
         break;
       case 'Vote':
-        console.log(embedFromMap.content);
-        const voteEmbed = new EmbedBuilder().setColor('Aqua').setTitle(embedFromMap.content.data.title);
-        interaction.deferUpdate();
-        break;
+        const userByVote = {};
+        userWhoVoted.forEach((vote, user) => {
+          if (!userByVote[vote]) userByVote[vote] = [];
+          userByVote[vote].push(user);
+        });
+        console.log(embedFromMap.content.data);
+
+        const voteEmbed = new EmbedBuilder().setColor('Aqua').setTitle(`${embedFromMap.content.data.title} results `);
+        embedFromMap.content.data.fields.forEach((field, index) => {
+          const users = userByVote[index] || [];
+          voteEmbed.addFields({ name: field.name, value: ` ${users.join(', ')}` || '0' });
+        });
+        await interaction.reply({ embeds: [voteEmbed] });
+        // interaction.deferUpdate();
+        return;
     }
     let i = 0;
     embedFromMap.content.data.fields.forEach((field) => {
