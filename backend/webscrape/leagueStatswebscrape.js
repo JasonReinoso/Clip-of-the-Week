@@ -21,7 +21,6 @@ const ScrapeProduct = async (summonerName) => {
   const summonerDetails = divContent.split('\n');
   if (summonerDetails.includes('Flex 5vs5')) summonerDetails.splice(3, 1);
   const cleanSummonerDetail = [summonerDetails[0], summonerDetails[1], `${summonerDetails[3]} ${summonerDetails[4]}-${summonerDetails[6]}`, `${summonerDetails[8]}`];
-  console.log(cleanSummonerDetail);
   browser.close();
 
   return cleanSummonerDetail;

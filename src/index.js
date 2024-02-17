@@ -10,14 +10,16 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { getEmbedFromMap, pushToEmbedMap } from './Components/embeds.js';
+import didSummonerWinOrLose from '../backend/controller/didSummonerWinOrLose.js';
 
 // eslint-disable-next-line no-underscore-dangle
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 // const __dirname = `file://${transtion.replace(/\\/g, '/')}`;
-
 dotenv.config();
 
+const pollingInterval = 120000;
+const channelId = process.env.channel_Id;
 const client = new Client({
   intents: [
     IntentsBitField.Flags.Guilds,
@@ -29,8 +31,11 @@ const client = new Client({
 });
 client.login(process.env.Discord_token);
 client.commands = new Collection();
-client.once(Events.ClientReady, (readyClient) => {
+
+client.once(Events.ClientReady, async (readyClient) => {
   console.log(`Ready! Logged in as ${readyClient.user.tag}`);
+  const channel = await client.channels.fetch(channelId);
+  didSummonerWinOrLose(channel, pollingInterval);
 });
 
 const checkVote = (name, usersWhoVoted, voteNumber, optionNumber, interaction) => {
