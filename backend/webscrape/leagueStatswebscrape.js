@@ -1,5 +1,6 @@
 /* eslint-disable linebreak-style */
 import puppeteer from 'puppeteer';
+import deleteSummoner from '../modal/deleteSummonerdata.js';
 
 const ScrapeProduct = async (summonerName) => {
   const url = 'https://leaguestats.gg/summoner/na/';
@@ -12,20 +13,25 @@ const ScrapeProduct = async (summonerName) => {
   console.log(summonerName);
   const newURL = `${url}${summonerName}`;
   await page.goto(newURL, { waitUntil: 'networkidle0' });
-  try{
-  const divContent = await page.evaluate(() => {
-    const element = document.evaluate('/html/body/div[1]/div[4]/div[2]/div[1]/div[1]/div[2]/div[2]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-    return element.innerText;
-  });
- }catch{
-  console.log(`${summonerName} catch has been caught`);
- }
-  const summonerDetails = divContent.split('\n');
-  if (summonerDetails.includes('Flex 5vs5')) summonerDetails.splice(3, 1);
-  const cleanSummonerDetail = [summonerDetails[0], summonerDetails[1], `${summonerDetails[3]} ${summonerDetails[4]}-${summonerDetails[6]}`, `${summonerDetails[8]}`];
-  browser.close();
+  try {
+    /// html/body/div[1]/div[4]/div[2]/div[1]/div[1]/div[2]/div[2]/div
+    const divContent = await page.evaluate(() => {
+      const element = document.evaluate('/html/body/div[1]/div[4]/div[2]/div[1]/div[1]/div[2]/div[2]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+      return element.innerText;
+    });
 
-  return cleanSummonerDetail;
+    const summonerDetails = divContent.split('\n');
+
+    if (summonerDetails.includes('Flex 5vs5')) summonerDetails.splice(3, 1);
+    const cleanSummonerDetail = [summonerDetails[0], summonerDetails[1], `${summonerDetails[3]} ${summonerDetails[4]}-${summonerDetails[6]}`, `${summonerDetails[8]}`];
+    browser.close();
+
+    return cleanSummonerDetail;
+  } catch {
+    console.log(`${summonerName} has an error. delete from database`);
+    deleteSummoner(summonerName);
+    return null;
+  }
 };
 
 // const startTune = performance.now();

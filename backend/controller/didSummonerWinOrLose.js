@@ -31,6 +31,7 @@ const didSummonerWinOrLose = async (channel) => {
 
     players.forEach(async (player) => {
       const newPlayerData = await ScrapeProduct(player.SummonerName);
+      if (newPlayerData === null) return;
       if (player.winrate !== newPlayerData[3]) {
         UpdateSummoner(player.SummonerName, newPlayerData);
         console.log(`${player.SummonerName} has finished a match`);
