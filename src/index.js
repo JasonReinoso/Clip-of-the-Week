@@ -11,7 +11,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { getEmbedFromMap, pushToEmbedMap } from './Components/embeds.js';
 import didSummonerWinOrLose from '../backend/controller/didSummonerWinOrLose.js';
-
+import ChannelTest from './Test/passChannelTest.js';
 // eslint-disable-next-line no-underscore-dangle
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,11 +32,20 @@ const client = new Client({
 client.login(process.env.Discord_token);
 client.commands = new Collection();
 
+
 client.once(Events.ClientReady, async (readyClient) => {
   console.log(`Ready! Logged in as ${readyClient.user.tag}`);
+
   const channel = await client.channels.fetch(channelId);
-  didSummonerWinOrLose(channel, pollingInterval);
+
+  setInterval(() => {
+    didSummonerWinOrLose(channel);
+  }, pollingInterval);
 });
+
+// await didSummonerWinOrLose(channel);
+
+// setInterval(async () => { await didSummonerWinOrLose(channel); }, pollingInterval);
 
 const checkVote = (name, usersWhoVoted, voteNumber, optionNumber, interaction) => {
   const doesUserExist = usersWhoVoted.get(name);
